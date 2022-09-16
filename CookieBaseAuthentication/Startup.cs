@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -21,6 +23,12 @@ namespace CookieBaseAuthentication
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(option => {
+                option.Cookie.Name = "AshProgHelpCookie"; // name of cookie
+                option.LoginPath = "/home/login"; // path for login redirect page 
+                option.AccessDeniedPath = "/login/UserAccessDenied"; // path for not authrized user page
+            });
+            
             services.AddMvc();
         }
 
@@ -38,7 +46,9 @@ namespace CookieBaseAuthentication
             }
 
             app.UseStaticFiles();
-
+            app.UseAuthentication();
+            app.UseAuthentication();
+            app.UseCookiePolicy();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

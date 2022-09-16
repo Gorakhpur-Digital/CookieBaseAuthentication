@@ -5,6 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using CookieBaseAuthentication.Models;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 
 namespace CookieBaseAuthentication.Controllers
 {
@@ -15,11 +18,34 @@ namespace CookieBaseAuthentication.Controllers
             return View();
         }
 
-        public IActionResult About()
+        public IActionResult Login()
         {
-            ViewData["Message"] = "Your application description page.";
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Login( string txtUserName, string txtPassword)
+        {
+            if((txtUserName == "admin" || txtUserName == "user") && txtPassword == "123")
+            {
+                var claim = new List<Claim>() {
+                    new Claim(ClaimTypes.Name,txtUserName),
+                    new Claim(ClaimTypes.Role,txtUserName)
+                };
+                var identity = new ClaimsIdentity(claim,CookieAuthenticationDefaults.AuthenticationScheme);
+                var principle = new ClaimsPrincipal(identity);
+                var props = new AuthenticationProperties();
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principle, props);
+                return RedirectToAction("index", "employee");
+            }
 
             return View();
+        }
+
+        public async Task<ActionResult> LogOut()
+        {
+            await HttpContext.SignOutAsync();
+            return RedirectToAction("index");
         }
 
         public IActionResult Contact()
